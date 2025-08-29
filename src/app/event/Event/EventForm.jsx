@@ -29,7 +29,16 @@ const useFetchEvent = (id) => {
     },
   });
 };
-
+const status = [
+  {
+    value: "Active",
+    label: "Active",
+  },
+  {
+    value: "Inactive",
+    label: "Inactive",
+  },
+];
 const EventForm = () => {
   const { id } = useParams();
   let decryptedId = null;
@@ -52,14 +61,14 @@ const EventForm = () => {
   const [formData, setFormData] = useState({
     event_name: "",
     event_description: "",
-    // event_image: "",
     event_member_allowed: "All",
     event_no_member_allowed: "1",
     event_from_date: "",
     event_to_date: "",
     event_payment: "",
     event_amount: "",
-    branch_id: "2",
+    branch_id: "",
+    event_status: isEditMode ? "" : null,
   });
   const [eventImageInfo, setEventImageInfo] = useState({
     file: null,
@@ -98,6 +107,7 @@ const EventForm = () => {
         event_payment: raw?.event_payment || "",
         event_amount: raw?.event_amount || "",
         branch_id: raw?.branch_id || "",
+        event_status: raw?.event_status || "",
       });
     }
   }, [decryptedId, materialByid]);
@@ -107,7 +117,6 @@ const EventForm = () => {
 
   const handleInputChange = (e, field) => {
     const value = e.target ? e.target.value : e;
-    console.log(value);
     let updatedFormData = { ...formData, [field]: value };
 
     setFormData(updatedFormData);
@@ -115,14 +124,31 @@ const EventForm = () => {
   useEffect(() => {
     const calculateProgress = () => {
       let formCopy = { ...formData };
-      formCopy.event_image = eventImageInfo.file || "";
+      let imageValue = "";
+      if (isEditMode) {
+        imageValue = eventImageInfo.preview || "";
+      } else {
+        imageValue = eventImageInfo.file || "";
+      }
+      const excludedFields = [
+        "event_member_allowed",
+        "event_no_member_allowed",
+      ];
+      if (!isEditMode) excludedFields.push("event_status");
+      if (isEditMode) excludedFields.push("branch_id");
 
-      const totalFormFields = Object.keys(formCopy).length;
+      Object.keys(formCopy).forEach((key) => {
+        if (excludedFields.includes(key)) {
+          delete formCopy[key];
+        }
+      });
 
-      const filledFormFields = Object.values(formCopy).filter((value) => {
-        if (value === null || value === undefined) return false;
-        return value.toString().trim() !== "";
-      }).length;
+      const totalFormFields = Object.keys(formCopy).length + 1;
+      const filledFormFields =
+        Object.values(formCopy).filter((value) => {
+          if (value === null || value === undefined) return false;
+          return value.toString().trim() !== "";
+        }).length + (imageValue ? 1 : 0);
 
       const missingFields = Object.entries(formCopy)
         .filter(
@@ -133,13 +159,16 @@ const EventForm = () => {
         )
         .map(([key]) => key);
 
-      // console.log(missingFields, "missingFields");
+      if (!imageValue) {
+        missingFields.push("Image");
+      }
 
-      const totalFields = totalFormFields;
-      const filledFields = filledFormFields;
+      console.log(missingFields, "missingFields");
 
       const percentage =
-        totalFields === 0 ? 0 : Math.round((filledFields / totalFields) * 100);
+        totalFormFields === 0
+          ? 0
+          : Math.round((filledFormFields / totalFormFields) * 100);
 
       setProgress(percentage);
     };
@@ -152,15 +181,20 @@ const EventForm = () => {
 
     const missingFields = [];
     if (!formData.event_name) missingFields.push("Event Name");
-    if (!eventImageInfo.file) missingFields.push("Image");
+    if (!isEditMode && !eventImageInfo.file) {
+      missingFields.push("Image");
+    }
+
     if (!formData.event_from_date) missingFields.push("From Date");
     if (!formData.event_to_date) missingFields.push("To Date");
-    if (!formData.event_payment) missingFields.push("Payment");
-    if (!formData.event_amount) missingFields.push("Payment Amount");
-    if (!formData.branch_id) missingFields.push("Branch");
+    // if (!formData.event_payment) missingFields.push("Payment");
+    // if (!formData.event_amount) missingFields.push("Payment Amount");
+    // if (!formData.branch_id) missingFields.push("Branch");
     if (!formData.event_member_allowed) missingFields.push("Member Allowed");
     if (!formData.event_no_member_allowed)
       missingFields.push("No of Member Allowed");
+    if (!formData.event_status && isEditMode)
+      missingFields.push("Status is Required");
 
     if (missingFields.length > 0) {
       toast({
@@ -210,10 +244,7 @@ const EventForm = () => {
       finallData.append("event_image", eventImageInfo.file);
     }
     if (isEditMode) {
-      finallData.append(
-        "event_status",
-        values.event_status ? "Active" : "Inactive" || ""
-      );
+      finallData.append("event_status", formData.event_status || "");
     }
     try {
       const response = await submitTrigger({
@@ -337,7 +368,7 @@ const EventForm = () => {
                       <label
                         className={`text-sm font-medium ${ButtonConfig.cardLabel}`}
                       >
-                        Payment <span className="text-red-500">*</span>
+                        Payment
                       </label>
                     </div>
 
@@ -353,11 +384,12 @@ const EventForm = () => {
                       placeholder="Select Payment"
                     />
                   </div>
+
                   <div>
                     <label
                       className={`block  ${ButtonConfig.cardLabel} text-sm mb-2 font-medium `}
                     >
-                      Amount<span className="text-red-500">*</span>
+                      Amount
                     </label>
                     <Input
                       className="bg-white border border-gray-300 rounded-lg w-full focus:ring-2 "
@@ -365,29 +397,31 @@ const EventForm = () => {
                       onChange={(e) => handleInputChange(e, "event_amount")}
                     />
                   </div>
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <label
-                        className={`text-sm font-medium ${ButtonConfig.cardLabel}`}
-                      >
-                        Branch <span className="text-red-500">*</span>
-                      </label>
-                    </div>
+                  {!isEditMode && (
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <label
+                          className={`text-sm font-medium ${ButtonConfig.cardLabel}`}
+                        >
+                          Branch
+                        </label>
+                      </div>
 
-                    <MemoizedSelect
-                      value={formData.branch_id}
-                      onChange={(e) => handleInputChange(e, "branch_id")}
-                      options={
-                        branchdata?.data?.map((blood) => ({
-                          value: blood.blood_group,
-                          label: blood.blood_group,
-                        })) || []
-                      }
-                      placeholder="Select Branch"
-                    />
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="mt-3">
+                      <MemoizedSelect
+                        value={formData.branch_id}
+                        onChange={(e) => handleInputChange(e, "branch_id")}
+                        options={
+                          branchdata?.data?.map((branchdata) => ({
+                            value: branchdata.id,
+                            label: branchdata.branch_name,
+                          })) || []
+                        }
+                        placeholder="Select Branch"
+                      />
+                    </div>
+                  )}
+                  <div className="flex mt-2 gap-4">
+                    <div className="mt-5">
                       <AvatarCell imageSrc={eventImageInfo.preview} />
                     </div>
 
@@ -396,6 +430,29 @@ const EventForm = () => {
                       buttonText="Upload Image"
                     />
                   </div>
+                  {isEditMode && (
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <label
+                          className={`text-sm font-medium ${ButtonConfig.cardLabel}`}
+                        >
+                          Status <span className="text-red-500">*</span>
+                        </label>
+                      </div>
+
+                      <MemoizedSelect
+                        value={formData.event_status}
+                        onChange={(e) => handleInputChange(e, "event_status")}
+                        options={
+                          status?.map((status) => ({
+                            value: status.value,
+                            label: status.label,
+                          })) || []
+                        }
+                        placeholder="Select Status"
+                      />
+                    </div>
+                  )}
                   <div className="col-span-2">
                     <label
                       className={`block  ${ButtonConfig.cardLabel} text-sm mb-2 font-medium `}
