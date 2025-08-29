@@ -1,11 +1,10 @@
-import { EVENT } from "@/api";
+import { EVENT_REGISTER } from "@/api";
 import Page from "@/app/page/page";
-import { AvatarCell } from "@/components/common/AvatarCell";
+import DeleteAlertDialog from "@/components/common/DeleteAlertDialog";
 import {
   ErrorComponent,
   LoaderComponent,
 } from "@/components/LoaderComponent/LoaderComponent";
-import EventStatusToggle from "@/components/toggle/EventStatusToggle";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -29,9 +28,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ButtonConfig } from "@/config/ButtonConfig";
-import { useToast } from "@/hooks/use-toast";
+import { useApiMutation } from "@/hooks/useApiMutation";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
-import { encryptId } from "@/utils/encyrption/Encyrption";
 import {
   flexRender,
   getCoreRowModel,
@@ -40,65 +38,82 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, Edit, Search, SquarePlus } from "lucide-react";
+import { ChevronDown, Edit, Search, SquarePlus, Trash2 } from "lucide-react";
 import moment from "moment";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import EventMemberTrackForm from "../EventMemberTrack/EventMemberTrackForm";
-const EventList = () => {
-  const [open, setOpen] = useState(false);
-  const [selectedId, setSelected] = useState(null);
-  const [imageUrls, setImageUrls] = useState({
-    userImageBase: "",
-    noImage: "",
-  });
+import { useState } from "react";
+import EventRegisterForm from "./EventRegisterForm";
+import { useToast } from "@/hooks/use-toast";
+const EventRegisterList = () => {
   const {
-    data: eventdata,
+    data: eventregisterdata,
     isLoading,
     isError,
     refetch,
   } = useGetApiMutation({
-    url: EVENT,
-    queryKey: ["eventdata"],
+    url: EVENT_REGISTER,
+    queryKey: ["eventregisterdata"],
   });
-  useEffect(() => {
-    if (!eventdata) return;
-    const userImageObj = eventdata?.image_url?.find(
-      (img) => img.image_for == "Event"
-    );
-    const noImageObj = eventdata?.image_url?.find(
-      (img) => img.image_for == "No Image"
-    );
-
-    setImageUrls({
-      userImageBase: userImageObj?.image_url || "",
-      noImage: noImageObj?.image_url || "",
-    });
-  }, [eventdata]);
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [selectedId, setSelected] = useState(null);
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
-  const navigate = useNavigate();
-
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState(null);
+  const { trigger: submitTrigger } = useApiMutation();
+  const handleDeleteRow = (eventid) => {
+    setDeleteItemId(eventid);
+    setDeleteConfirmOpen(true);
+  };
+  const confirmDelete = async () => {
+    try {
+      const response = await submitTrigger({
+        url: `${EVENT_REGISTER}/${deleteItemId}`,
+        method: "delete",
+      });
+      if (response.code == 201) {
+        toast({
+          title: "Success",
+          description: response.message,
+          variant: "success",
+        });
+        setDeleteConfirmOpen(false);
+        setDeleteItemId(null);
+        refetch();
+      } else if (response.code == 400) {
+        toast({
+          title: "Duplicate Entry",
+          description: response.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Something went wrong.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Unexpected Error",
+        description:
+          error?.response?.data?.msg ||
+          error.message ||
+          "Something unexpected happened.",
+        variant: "destructive",
+      });
+      console.error("Failed to delete:", error);
+    }
+  };
   const columns = [
     {
-      accessorKey: "event_image",
-      id: "Event Image",
-      header: "Event Image",
-      cell: ({ row }) => {
-        const user = row.original;
-        const eventImageSrc = user.event_image
-          ? `${imageUrls.userImageBase}${user.event_image}`
-          : imageUrls.noImage;
-        return (
-          <div className="flex justify-center gap-2">
-            <AvatarCell imageSrc={eventImageSrc} alt="Avatar Image" />
-          </div>
-        );
-      },
+      accessorKey: "event_register_mid",
+      id: "Event Id",
+      header: "Event Id",
+      cell: ({ row }) => <div>{row.getValue("Event Id")}</div>,
     },
-
     {
       accessorKey: "event_name",
       id: "Event Name",
@@ -106,65 +121,56 @@ const EventList = () => {
       cell: ({ row }) => <div>{row.getValue("Event Name")}</div>,
     },
     {
-      accessorKey: "event_from_date",
-      id: "From Date",
-      header: "From Date",
+      accessorKey: "name",
+      id: "Name",
+      header: "Name",
+      cell: ({ row }) => <div>{row.getValue("Name")}</div>,
+    },
+    {
+      accessorKey: "event_register_date",
+      id: "Register Date",
+      header: "Register Date",
       cell: ({ row }) => {
-        const date = row.getValue("From Date");
+        const date = row.getValue("Register Date");
         return <div>{moment(date).format("DD MMM YYYY")}</div>;
       },
     },
     {
-      accessorKey: "event_to_date",
-      id: "To Date",
-      header: "To Date",
-      cell: ({ row }) => {
-        const date = row.getValue("To Date");
-        return <div>{moment(date).format("DD MMM YYYY")}</div>;
-      },
+      accessorKey: "event_register_name",
+      id: "Register Name",
+      header: "Register Name",
+      cell: ({ row }) => <div>{row.getValue("Register Name")}</div>,
     },
     {
-      accessorKey: "event_payment",
-      id: "Payment",
-      header: "Payment",
-      cell: ({ row }) => <div>{row.getValue("Payment")}</div>,
+      accessorKey: "event_register_mobile",
+      id: "Mobile",
+      header: "Mobile",
+      cell: ({ row }) => <div>{row.getValue("Mobile")}</div>,
     },
     {
-      accessorKey: "event_amount",
-      id: "Amount",
-      header: "Amount",
-      cell: ({ row }) => <div>{row.getValue("Amount")}</div>,
+      accessorKey: "event_register_email",
+      id: "Email",
+      header: "Email",
+      cell: ({ row }) => <div>{row.getValue("Email")}</div>,
     },
     // {
-    //   accessorKey: "event_member_allowed",
-    //   id: "Member Allowed",
-    //   header: "Member Allowed",
-    //   cell: ({ row }) => <div>{row.getValue("Member Allowed")}</div>,
+    //   accessorKey: "event_register_amount",
+    //   id: "Amount",
+    //   header: "Amount",
+    //   cell: ({ row }) => <div>{row.getValue("Amount")}</div>,
     // },
     // {
-    //   accessorKey: "event_no_member_allowed",
-    //   id: "No Of Alllowed",
-    //   header: "No Of Alllowed",
-    //   cell: ({ row }) => <div>{row.getValue("No Of Alllowed")}</div>,
+    //   accessorKey: "event_register_payment_type",
+    //   id: "Payment Type",
+    //   header: "Payment Type",
+    //   cell: ({ row }) => <div>{row.getValue("Payment Type")}</div>,
     // },
-    {
-      accessorKey: "event_status",
-      id: "Status",
-      header: "Status",
-      cell: ({ row }) => {
-        const status = row.getValue("Status");
-        const teamId = row.original.id;
-        return (
-          <EventStatusToggle
-            initialStatus={status}
-            teamId={teamId}
-            onStatusChange={() => {
-              refetch();
-            }}
-          />
-        );
-      },
-    },
+    // {
+    //   accessorKey: "event_register_transaction",
+    //   id: "Transaction",
+    //   header: "Transaction",
+    //   cell: ({ row }) => <div>{row.getValue("Transaction")}</div>,
+    // },
 
     {
       id: "actions",
@@ -181,16 +187,15 @@ const EventList = () => {
                     variant="ghost"
                     size="icon"
                     onClick={() => {
-                      navigate(
-                        `/event-form/${encodeURIComponent(encryptId(id))}`
-                      );
+                      setSelected(id);
+                      setOpen(true);
                     }}
                   >
                     <Edit />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Edit Event</p>
+                  <p>Edit Event Register</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>{" "}
@@ -199,20 +204,18 @@ const EventList = () => {
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelected(null);
-                      setOpen(true);
-                    }}
+                    onClick={() => handleDeleteRow(id)}
+                    className="text-red-500"
+                    type="button"
                   >
-                    <SquarePlus />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Edit Event</p>
+                  <p>Delete Event Register</p>
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>{" "}
+            </TooltipProvider>
           </div>
         );
       },
@@ -220,7 +223,7 @@ const EventList = () => {
   ];
 
   const table = useReactTable({
-    data: eventdata?.data || [],
+    data: eventregisterdata?.data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -249,7 +252,10 @@ const EventList = () => {
 
   if (isError) {
     return (
-      <ErrorComponent message="Error Fetching Event Data" refetch={refetch} />
+      <ErrorComponent
+        message="Error Fetching Event Register Data"
+        refetch={refetch}
+      />
     );
   }
 
@@ -257,13 +263,13 @@ const EventList = () => {
     <Page>
       <div className="w-full">
         <div className="flex text-left text-2xl text-gray-800 font-[400]">
-          Event List
+          Event Register List
         </div>
         <div className="flex items-center py-4">
           <div className="relative w-72">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
             <Input
-              placeholder="Search Event..."
+              placeholder="Search Event Register..."
               value={table.getState().globalFilter || ""}
               onChange={(event) => table.setGlobalFilter(event.target.value)}
               className="pl-8 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200"
@@ -300,10 +306,11 @@ const EventList = () => {
             variant="default"
             className={`ml-2 ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor} `}
             onClick={() => {
-              navigate("/event-form");
+              setSelected(null);
+              setOpen(true);
             }}
           >
-            <SquarePlus className="h-4 w-4 " /> Event
+            <SquarePlus className="h-4 w-4 " /> Event Register
           </Button>
         </div>
         <div className="rounded-md border">
@@ -362,7 +369,7 @@ const EventList = () => {
         {/* row slection and pagintaion button  */}
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="flex-1 text-sm text-muted-foreground">
-            Total Event : &nbsp;
+            Total Event Register: &nbsp;
             {table.getFilteredRowModel().rows.length}
           </div>
           <div className="space-x-2">
@@ -386,15 +393,23 @@ const EventList = () => {
         </div>
       </div>
       {open && (
-        <EventMemberTrackForm
+        <EventRegisterForm
           setOpen={setOpen}
           open={open}
           selectedId={selectedId}
           refetch={refetch}
         />
       )}
+      {deleteConfirmOpen && (
+        <DeleteAlertDialog
+          open={deleteConfirmOpen}
+          onOpenChange={setDeleteConfirmOpen}
+          description="Event Register"
+          handleDelete={confirmDelete}
+        />
+      )}
     </Page>
   );
 };
 
-export default EventList;
+export default EventRegisterList;

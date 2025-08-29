@@ -1,11 +1,9 @@
-import { EVENT } from "@/api";
+import { EVENT_MEMEBER_TRACK } from "@/api";
 import Page from "@/app/page/page";
-import { AvatarCell } from "@/components/common/AvatarCell";
 import {
   ErrorComponent,
   LoaderComponent,
 } from "@/components/LoaderComponent/LoaderComponent";
-import EventStatusToggle from "@/components/toggle/EventStatusToggle";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -29,9 +27,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ButtonConfig } from "@/config/ButtonConfig";
-import { useToast } from "@/hooks/use-toast";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
-import { encryptId } from "@/utils/encyrption/Encyrption";
 import {
   flexRender,
   getCoreRowModel,
@@ -40,65 +36,28 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, Edit, Search, SquarePlus } from "lucide-react";
+import { ChevronDown, Edit, Search } from "lucide-react";
 import moment from "moment";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import EventMemberTrackForm from "../EventMemberTrack/EventMemberTrackForm";
-const EventList = () => {
-  const [open, setOpen] = useState(false);
-  const [selectedId, setSelected] = useState(null);
-  const [imageUrls, setImageUrls] = useState({
-    userImageBase: "",
-    noImage: "",
-  });
+import EventMemberTrackForm from "./EventMemberTrackForm";
+const EventMemberTractList = () => {
   const {
-    data: eventdata,
+    data: eventtrackdata,
     isLoading,
     isError,
     refetch,
   } = useGetApiMutation({
-    url: EVENT,
-    queryKey: ["eventdata"],
+    url: EVENT_MEMEBER_TRACK,
+    queryKey: ["eventtrackdata"],
   });
-  useEffect(() => {
-    if (!eventdata) return;
-    const userImageObj = eventdata?.image_url?.find(
-      (img) => img.image_for == "Event"
-    );
-    const noImageObj = eventdata?.image_url?.find(
-      (img) => img.image_for == "No Image"
-    );
-
-    setImageUrls({
-      userImageBase: userImageObj?.image_url || "",
-      noImage: noImageObj?.image_url || "",
-    });
-  }, [eventdata]);
+  const [open, setOpen] = useState(false);
+  const [selectedId, setSelected] = useState(null);
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
-  const navigate = useNavigate();
-
   const columns = [
-    {
-      accessorKey: "event_image",
-      id: "Event Image",
-      header: "Event Image",
-      cell: ({ row }) => {
-        const user = row.original;
-        const eventImageSrc = user.event_image
-          ? `${imageUrls.userImageBase}${user.event_image}`
-          : imageUrls.noImage;
-        return (
-          <div className="flex justify-center gap-2">
-            <AvatarCell imageSrc={eventImageSrc} alt="Avatar Image" />
-          </div>
-        );
-      },
-    },
-
     {
       accessorKey: "event_name",
       id: "Event Name",
@@ -106,64 +65,32 @@ const EventList = () => {
       cell: ({ row }) => <div>{row.getValue("Event Name")}</div>,
     },
     {
-      accessorKey: "event_from_date",
-      id: "From Date",
-      header: "From Date",
+      accessorKey: "name",
+      id: "Name",
+      header: "Name",
+      cell: ({ row }) => <div>{row.getValue("Name")}</div>,
+    },
+    {
+      accessorKey: "event_member_mid",
+      id: "MID",
+      header: "MID",
+      cell: ({ row }) => <div>{row.getValue("MID")}</div>,
+    },
+    {
+      accessorKey: "event_entry_date",
+      id: "Entry Date",
+      header: "Entry Date",
       cell: ({ row }) => {
-        const date = row.getValue("From Date");
+        const date = row.getValue("Entry Date");
         return <div>{moment(date).format("DD MMM YYYY")}</div>;
       },
     },
+
     {
-      accessorKey: "event_to_date",
-      id: "To Date",
-      header: "To Date",
-      cell: ({ row }) => {
-        const date = row.getValue("To Date");
-        return <div>{moment(date).format("DD MMM YYYY")}</div>;
-      },
-    },
-    {
-      accessorKey: "event_payment",
-      id: "Payment",
-      header: "Payment",
-      cell: ({ row }) => <div>{row.getValue("Payment")}</div>,
-    },
-    {
-      accessorKey: "event_amount",
-      id: "Amount",
-      header: "Amount",
-      cell: ({ row }) => <div>{row.getValue("Amount")}</div>,
-    },
-    // {
-    //   accessorKey: "event_member_allowed",
-    //   id: "Member Allowed",
-    //   header: "Member Allowed",
-    //   cell: ({ row }) => <div>{row.getValue("Member Allowed")}</div>,
-    // },
-    // {
-    //   accessorKey: "event_no_member_allowed",
-    //   id: "No Of Alllowed",
-    //   header: "No Of Alllowed",
-    //   cell: ({ row }) => <div>{row.getValue("No Of Alllowed")}</div>,
-    // },
-    {
-      accessorKey: "event_status",
-      id: "Status",
-      header: "Status",
-      cell: ({ row }) => {
-        const status = row.getValue("Status");
-        const teamId = row.original.id;
-        return (
-          <EventStatusToggle
-            initialStatus={status}
-            teamId={teamId}
-            onStatusChange={() => {
-              refetch();
-            }}
-          />
-        );
-      },
+      accessorKey: "event_no_of_people",
+      id: "No of People",
+      header: "No of People",
+      cell: ({ row }) => <div>{row.getValue("No of People")}</div>,
     },
 
     {
@@ -181,35 +108,15 @@ const EventList = () => {
                     variant="ghost"
                     size="icon"
                     onClick={() => {
-                      navigate(
-                        `/event-form/${encodeURIComponent(encryptId(id))}`
-                      );
+                      setSelected(id);
+                      setOpen(true);
                     }}
                   >
                     <Edit />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Edit Event</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>{" "}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelected(null);
-                      setOpen(true);
-                    }}
-                  >
-                    <SquarePlus />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Edit Event</p>
+                  <p>Edit Event Track</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>{" "}
@@ -220,7 +127,7 @@ const EventList = () => {
   ];
 
   const table = useReactTable({
-    data: eventdata?.data || [],
+    data: eventtrackdata?.data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -249,7 +156,10 @@ const EventList = () => {
 
   if (isError) {
     return (
-      <ErrorComponent message="Error Fetching Event Data" refetch={refetch} />
+      <ErrorComponent
+        message="Error Fetching Event Track Data"
+        refetch={refetch}
+      />
     );
   }
 
@@ -257,13 +167,13 @@ const EventList = () => {
     <Page>
       <div className="w-full">
         <div className="flex text-left text-2xl text-gray-800 font-[400]">
-          Event List
+          Event Track List
         </div>
         <div className="flex items-center py-4">
           <div className="relative w-72">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
             <Input
-              placeholder="Search Event..."
+              placeholder="Search Event Track..."
               value={table.getState().globalFilter || ""}
               onChange={(event) => table.setGlobalFilter(event.target.value)}
               className="pl-8 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200"
@@ -295,16 +205,6 @@ const EventList = () => {
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <Button
-            variant="default"
-            className={`ml-2 ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor} `}
-            onClick={() => {
-              navigate("/event-form");
-            }}
-          >
-            <SquarePlus className="h-4 w-4 " /> Event
-          </Button>
         </div>
         <div className="rounded-md border">
           <Table>
@@ -362,7 +262,7 @@ const EventList = () => {
         {/* row slection and pagintaion button  */}
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="flex-1 text-sm text-muted-foreground">
-            Total Event : &nbsp;
+            Total Event Track : &nbsp;
             {table.getFilteredRowModel().rows.length}
           </div>
           <div className="space-x-2">
@@ -397,4 +297,4 @@ const EventList = () => {
   );
 };
 
-export default EventList;
+export default EventMemberTractList;

@@ -16,6 +16,8 @@ export const MEMBER_LIST = `/member`;
 export const EVENT = `/event`;
 //EVENT_REGISTER
 export const EVENT_REGISTER = `/event-register`;
+//EVENT_MEMEBER_TRACK
+export const EVENT_MEMEBER_TRACK = `/event-member-track`;
 
 // ------------------olkd---------------------------------
 //PROFILE

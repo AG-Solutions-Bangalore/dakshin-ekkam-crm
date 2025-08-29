@@ -18,7 +18,14 @@ const DeleteAlertDialog = ({
   handleDelete,
 }) => {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog
+      open={open}
+      // onOpenChange={(open) => {
+      //   if (!open) {
+      //     onOpenChange(false);
+      //   }
+      // }}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <div className="flex items-center gap-2 text-red-600">
@@ -32,12 +39,15 @@ const DeleteAlertDialog = ({
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel className="border-gray-300 ">
+          <AlertDialogCancel
+            className="border-gray-300 "
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
-            className={`flex items-center gap-2 ${ButtonConfig.backgroundColor} ${ButtonConfig.textColor} hover:bg-red-600`}
+            className={`flex items-center gap-2 ${ButtonConfig.backgroundColor} ${ButtonConfig.textColor}`}
           >
             Delete
           </AlertDialogAction>

@@ -48,6 +48,9 @@ import MemberList from "@/app/member/MemberList";
 import MemberForm from "@/app/member/MemberForm";
 import EventList from "@/app/event/Event/EventList";
 import EventForm from "@/app/event/Event/EventForm";
+import EventRegisterList from "@/app/event/EventRegister/EventRegisterList";
+import EventRegisterForm from "@/app/event/EventRegister/EventRegisterForm";
+import EventMemberTractList from "@/app/event/EventMemberTrack/EventMemberTractList";
 const AppRoutes = () => {
   return (
     <Routes>
@@ -56,7 +59,6 @@ const AppRoutes = () => {
         <Route path="/maintenance" element={<Maintenance />} />
       </Route>
       <Route path="/" element={<ProtectedRoute />}>
-        {/* HOME */}
         <Route path="/home" element={<Dashboard />} />
         <Route path="/member" element={<MemberList />} />
         <Route path="/member-form" element={<MemberForm />} />
@@ -64,6 +66,8 @@ const AppRoutes = () => {
         <Route path="/event" element={<EventList />} />
         <Route path="/event-form" element={<EventForm />} />
         <Route path="/event-form/:id" element={<EventForm />} />
+        <Route path="/event-register" element={<EventRegisterList />} />
+        <Route path="/event-track" element={<EventMemberTractList />} />
 
         {/* -------------------old----------------------------- */}
         {/* Master */}

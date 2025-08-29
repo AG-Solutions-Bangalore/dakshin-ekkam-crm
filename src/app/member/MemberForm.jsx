@@ -35,6 +35,16 @@ const MarriedStatus = [
     label: "Unmarried",
   },
 ];
+const status = [
+  {
+    value: "Active",
+    label: "Active",
+  },
+  {
+    value: "Inactive",
+    label: "Inactive",
+  },
+];
 const MemberForm = () => {
   const { id } = useParams();
   let decryptedId = null;
@@ -71,6 +81,7 @@ const MemberForm = () => {
     user_doa: "",
     user_married_status: "",
     user_group_mid: "",
+    user_status: isEditMode ? "" : null,
   });
   const { trigger: submitTrigger, loading: submitLoading } = useApiMutation();
   const { data: materialByid, loading: isFetching } =
@@ -95,6 +106,7 @@ const MemberForm = () => {
         user_doa: raw?.user_doa || "",
         user_married_status: raw?.user_married_status || "",
         user_group_mid: raw?.user_group_mid || "",
+        user_status: raw?.user_status || "",
       });
     }
   }, [decryptedId, materialByid]);
@@ -168,7 +180,8 @@ const MemberForm = () => {
     if (!formData.user_married_status) missingFields.push("Marital Status");
     if (!formData.user_group_mid && !isEditMode)
       missingFields.push("Group MID");
-
+    if (!formData.user_status && isEditMode)
+      missingFields.push("Status is Required");
     if (missingFields.length > 0) {
       toast({
         title: "Validation Error",
@@ -455,6 +468,7 @@ const MemberForm = () => {
                       placeholder="Select  Married Status"
                     />
                   </div>
+
                   {!isEditMode && (
                     <div>
                       <label
@@ -466,6 +480,29 @@ const MemberForm = () => {
                         className="bg-white border border-gray-300 rounded-lg w-full focus:ring-2 "
                         value={formData.user_group_mid}
                         onChange={(e) => handleInputChange(e, "user_group_mid")}
+                      />
+                    </div>
+                  )}
+                  {isEditMode && (
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <label
+                          className={`text-sm font-medium ${ButtonConfig.cardLabel}`}
+                        >
+                          Status <span className="text-red-500">*</span>
+                        </label>
+                      </div>
+
+                      <MemoizedSelect
+                        value={formData.event_status}
+                        onChange={(e) => handleInputChange(e, "event_status")}
+                        options={
+                          status?.map((status) => ({
+                            value: status.value,
+                            label: status.label,
+                          })) || []
+                        }
+                        placeholder="Select Status"
                       />
                     </div>
                   )}
@@ -494,7 +531,7 @@ const MemberForm = () => {
               <Button
                 type="button"
                 onClick={() => {
-                  navigate("/raw-material");
+                  navigate("/member");
                 }}
                 className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor} flex items-center mt-2`}
               >
