@@ -29,7 +29,6 @@ import { useSelector } from "react-redux";
 export function AppSidebar({ ...props }) {
   const nameL = useSelector((state) => state.auth.name);
   const emailL = useSelector((state) => state.auth.email);
-  // const companyName = useSelector((state) => state.auth.companyname);
   const userType = useSelector((state) => state.auth.user_type);
 
   const initialData = {
@@ -42,7 +41,6 @@ export function AppSidebar({ ...props }) {
       {
         name: "Dakshin Ekkam",
         logo: Factory,
-        // plan: `${companyName}`,
       },
       {
         name: "Acme Corp.",
@@ -94,109 +92,32 @@ export function AppSidebar({ ...props }) {
         ],
       },
 
-
-
-
-     
       {
         title: "Report",
         url: "#",
         isActive: false,
         icon: ChartColumnDecreasing,
+
         items: [
           {
-            title: "Purchase",
-            url: "#",
-            isActive: false,
-            icon: Package,
-            items: [
-              {
-                title: "Raw Material",
-                url: "/report/purchase-raw-material",
-              },
-              {
-                title: "Granuals",
-                url: "/report/purchase-granuals",
-              },
-            ],
+            title: "Event",
+            url: "/report-event",
           },
           {
-            title: "Sales",
-            url: "#",
-            isActive: false,
-            icon: ShoppingCart,
-            items: [
-              {
-                title: "Fabric",
-                url: "/report/sales-fabric",
-              },
-              {
-                title: "Yarn",
-                url: "/report/sales-yarn",
-              },
-            ],
+            title: "Event Details",
+            url: "/report-event-details",
           },
           {
-            title: "Production",
-            url: "#",
-            isActive: false,
-            icon: Factory,
-            items: [
-              {
-                title: "Raw Material",
-                url: "/report/production-raw-material",
-              },
-              {
-                title: "Granuals",
-                url: "/report/production-granuals",
-              },
-
-              {
-                title: "Yarn",
-                url: "/report/production-yarn",
-              },
-              {
-                title: "Fabric",
-                url: "/report/production-fabric",
-              },
-              {
-                title: "Fabric Work",
-                url: "/report/production-fabric-work",
-              },
-            ],
+            title: "Registered Not Scanned",
+            url: "/report-register-notscanned",
           },
           {
-            title: "Stock",
-            url: "#",
-            isActive: false,
-            icon: Package,
-            items: [
-              {
-                title: "Raw material",
-                url: "/report/raw-material",
-              },
-              {
-                title: "Granuals",
-                url: "/report/granuals",
-              },
-              {
-                title: "Yarn",
-                url: "/report/yarn",
-              },
-              {
-                title: "Fabric",
-                url: "/report/fabric",
-              },
-            ],
+            title: "Not Registered Not Scanned",
+            url: "/report-notregister-notscanned",
           },
         ],
       },
-      {
-        title: "Website Enquiry",
-        url: "/website-enquiry",
-        icon: NotebookText,
-        isActive: false,
-      },
+
     ],
   };
 

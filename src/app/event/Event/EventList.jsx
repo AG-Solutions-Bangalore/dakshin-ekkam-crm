@@ -40,14 +40,32 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, Edit, Search, SquarePlus } from "lucide-react";
+import {
+  BadgeXIcon,
+  ChevronDown,
+  Edit,
+  Search,
+  SquarePlus,
+} from "lucide-react";
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EventMemberTrackForm from "../EventMemberTrack/EventMemberTrackForm";
+import EventTrackQRScanner from "../EventMemberTrack/EventTrackQRScanner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 const EventList = () => {
   const [open, setOpen] = useState(false);
   const [selectedId, setSelected] = useState(null);
+  const [openQrDialog, setOpenQrDialog] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [NoofMember, setNoofMember] = useState(null);
+  const [eventId, setEventId] = useState(null);
+
   const [imageUrls, setImageUrls] = useState({
     userImageBase: "",
     noImage: "",
@@ -80,7 +98,16 @@ const EventList = () => {
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
   const navigate = useNavigate();
-
+  const handleScannerClose = () => {
+    setOpenQrDialog(false);
+    setScanning(false);
+  };
+  const handleScanner = (user) => {
+    setEventId(user.id);
+    setNoofMember(user.event_no_member_allowed);
+    setOpenQrDialog(true);
+    setScanning(true);
+  };
   const columns = [
     {
       accessorKey: "event_image",
@@ -135,18 +162,6 @@ const EventList = () => {
       header: "Amount",
       cell: ({ row }) => <div>{row.getValue("Amount")}</div>,
     },
-    // {
-    //   accessorKey: "event_member_allowed",
-    //   id: "Member Allowed",
-    //   header: "Member Allowed",
-    //   cell: ({ row }) => <div>{row.getValue("Member Allowed")}</div>,
-    // },
-    // {
-    //   accessorKey: "event_no_member_allowed",
-    //   id: "No Of Alllowed",
-    //   header: "No Of Alllowed",
-    //   cell: ({ row }) => <div>{row.getValue("No Of Alllowed")}</div>,
-    // },
     {
       accessorKey: "event_status",
       id: "Status",
@@ -171,6 +186,7 @@ const EventList = () => {
       header: "Action",
       cell: ({ row }) => {
         const id = row.original.id;
+        const user = row.original;
 
         return (
           <div className="flex flex-row">
@@ -206,6 +222,22 @@ const EventList = () => {
                     }}
                   >
                     <SquarePlus />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Edit Event</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>{" "}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleScanner(user)}
+                  >
+                    <BadgeXIcon />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -393,6 +425,21 @@ const EventList = () => {
           refetch={refetch}
         />
       )}
+
+      <Dialog open={openQrDialog} onOpenChange={handleScannerClose}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Scan</DialogTitle>
+          </DialogHeader>
+          <EventTrackQRScanner
+            eventId={eventId}
+            setOpenQrDialog={setOpenQrDialog}
+            setScanning={setScanning}
+            scanning={scanning}
+            NoofMember={NoofMember}
+          />
+        </DialogContent>
+      </Dialog>
     </Page>
   );
 };
