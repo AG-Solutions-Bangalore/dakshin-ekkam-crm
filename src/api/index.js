@@ -18,6 +18,14 @@ export const EVENT = `/event`;
 export const EVENT_REGISTER = `/event-register`;
 //EVENT_MEMEBER_TRACK
 export const EVENT_MEMEBER_TRACK = `/event-member-track`;
+//EVENT_REPORT
+export const EVENT_REPORT = `/panel-fetch-event-report`;
+//EVENT_DETAIILS_REPORT
+export const EVENT_DETAIILS_REPORT = `/panel-fetch-event-details-report`;
+//EVENT_REGISTER_NOTSCANNED_REPORT
+export const EVENT_REGISTER_NOTSCANNED_REPORT = `/panel-fetch-event-register-notscanned-report`;
+//EVENT_NOTREGISTER_NOTSCANNED_REPORT
+export const EVENT_NOTREGISTER_NOTSCANNED_REPORT = `/panel-fetch-event-notregister-notscanned-report`;
 
 // ------------------olkd---------------------------------
 //PROFILE
