@@ -138,7 +138,6 @@ const EventMemberTrackForm = ({
         });
       }
     } catch (error) {
-      console.log(error);
       toast({
         title: "Error",
         description:

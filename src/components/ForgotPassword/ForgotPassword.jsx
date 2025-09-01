@@ -1,19 +1,18 @@
 import { PANEL_SEND_PASSWORD } from "@/api";
-import apiClient from "@/api/axios";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardHeader
+  CardHeader,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ButtonConfig } from "@/config/ButtonConfig";
 import { useToast } from "@/hooks/use-toast";
+import { useApiMutation } from "@/hooks/useApiMutation";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Logo from "../common/Logo";
 
 export default function ForgotPassword({ setForgot }) {
@@ -21,8 +20,8 @@ export default function ForgotPassword({ setForgot }) {
   const [username, setUserName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
-  const navigate = useNavigate();
   const { toast } = useToast();
+  const { trigger: submitTrigger } = useApiMutation();
 
   const loadingMessages = [
     "Setting things up for you...",
@@ -56,13 +55,13 @@ export default function ForgotPassword({ setForgot }) {
     formData.append("username", username);
 
     try {
-      console.log("Submitting forgot password request...");
 
-      const res = await apiClient.post(`${PANEL_SEND_PASSWORD}`, formData);
-
-      if (res.status === 200) {
-        const response = res.data;
-
+      const response = await submitTrigger({
+        url: PANEL_SEND_PASSWORD,
+        method: "post",
+        data: formData,
+      });
+      if (response.status == 200) {
         if (response.code === 201) {
           toast({
             title: "Success",
@@ -114,7 +113,7 @@ export default function ForgotPassword({ setForgot }) {
         <CardContent>
           <form onSubmit={handleReset} className="space-y-6">
             <div>
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">Mobile No</Label>
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -123,7 +122,7 @@ export default function ForgotPassword({ setForgot }) {
                 <Input
                   id="username"
                   type="text"
-                  placeholder="Enter your Username"
+                  placeholder="Enter your Mobile No"
                   value={username}
                   onChange={(e) => setUserName(e.target.value)}
                   required

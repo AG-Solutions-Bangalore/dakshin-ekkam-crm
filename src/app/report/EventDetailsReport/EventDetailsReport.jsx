@@ -21,12 +21,9 @@ const EventDetailsReport = () => {
   const [eventdetailsData, setEventDetailsData] = useState([]);
   const [eventdetails, setEventDetails] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // single state for all filters
   const [filters, setFilters] = useState({
     eventId: "",
   });
-
   const eventRef = useRef(null);
   const { trigger: submitTrigger } = useApiMutation();
 
@@ -180,12 +177,11 @@ const EventDetailsReport = () => {
                   <thead className="bg-gray-100">
                     <tr>
                       <th className="px-3 py-2 text-center ">MID</th>
+                      <th className="px-3 py-2 text-center ">Name</th>
+                      <th className="px-3 py-2 text-center">Mobile</th>
                       <th className="px-3 py-2 text-center ">Payment Type</th>
                       <th className="px-3 py-2 text-center ">Transaction</th>
                       <th className="px-3 py-2 text-center ">No of People</th>
-                      <th className="px-3 py-2 text-center ">Name</th>
-                      <th className="px-3 py-2 text-center">Mobile</th>
-                      <th className="px-3 py-2 text-center  ">Member Type</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -202,6 +198,12 @@ const EventDetailsReport = () => {
                           {item.event_register_mid}
                         </td>
                         <td className="px-3 py-2 text-center">
+                          {item.first_name}.{item.middle_name}.{item.last_name}
+                        </td>
+                        <td className="px-3 py-2 text-center ">
+                          {item.mobile}
+                        </td>
+                        <td className="px-3 py-2 text-center">
                           {item.event_register_payment_type}
                         </td>
                         <td className="px-3 py-2 text-center">
@@ -210,13 +212,6 @@ const EventDetailsReport = () => {
                         <td className="px-3 py-2 text-center">
                           {item.event_no_of_people}
                         </td>{" "}
-                        <td className="px-3 py-2 text-center">{item.name}</td>
-                        <td className="px-3 py-2 text-center ">
-                          {item.mobile}
-                        </td>
-                        <td className="px-3 py-2 text-center ">
-                          {item.user_member_type}
-                        </td>
                       </tr>
                     ))}
                   </tbody>

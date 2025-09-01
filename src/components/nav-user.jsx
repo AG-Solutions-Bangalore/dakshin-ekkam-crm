@@ -1,5 +1,4 @@
 import ChangePassword from "@/app/auth/ChangePassword";
-import Profile from "@/app/auth/Profile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -23,7 +22,6 @@ import { useDispatch, useSelector } from "react-redux";
 
 export function NavUser({ user }) {
   const [open, setOpen] = useState(false);
-  const [openprofile, setOpenProfile] = useState(false);
 
   const { isMobile } = useSidebar();
   const user_position = useSelector((state) => state.auth.user_position);
@@ -101,7 +99,7 @@ export function NavUser({ user }) {
                       </span>
                     </span>
                     <span className="flex items-center gap-1 font-semibold">
-                      Updated on :29/08/2025
+                      Updated on :01/09/2025
                     </span>
                   </div>
                 </div>
@@ -130,11 +128,7 @@ export function NavUser({ user }) {
                 </DropdownMenuLabel>
 
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setOpenProfile(true)}>
-                  <User />
 
-                  <span className=" cursor-pointer">Profile</span>
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setOpen(true)}>
                   <Key />
 
@@ -152,11 +146,6 @@ export function NavUser({ user }) {
         </SidebarMenuItem>
       </SidebarMenu>
       <ChangePassword setOpen={setOpen} open={open} />
-      <Profile setOpen={setOpenProfile} open={openprofile} />
-      {/* <VersionCheck
-        isDialogOpen={isDialogOpen}
-        setIsDialogOpen={setIsDialogOpen}
-      /> */}
     </>
   );
 }

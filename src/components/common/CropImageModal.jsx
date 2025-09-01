@@ -1,17 +1,15 @@
-import Cropper from "react-easy-crop";
-import { useState, useCallback, useEffect } from "react";
-import getCroppedImg from "./cropImageUtils";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
   DialogFooter,
+  DialogHeader,
+  DialogTitle
 } from "@/components/ui/dialog";
-import { X } from "lucide-react";
-import { Button } from "../ui/button";
 import { ButtonConfig } from "@/config/ButtonConfig";
+import { useCallback, useEffect, useState } from "react";
+import Cropper from "react-easy-crop";
+import { Button } from "../ui/button";
+import getCroppedImg from "./cropImageUtils";
 
 const CropImageModal = ({
   open,

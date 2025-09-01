@@ -1,41 +1,24 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Factory, TrendingUp, Users, ShoppingCart } from "lucide-react";
-import Page from "../page/page";
-import { useQuery } from "@tanstack/react-query";
-import apiClient from "@/api/axios";
-import usetoken from "@/api/usetoken";
 import { DASHBOARD } from "@/api";
 import {
   ErrorComponent,
   LoaderComponent,
 } from "@/components/LoaderComponent/LoaderComponent";
-import moment from "moment";
+import { Card, CardContent } from "@/components/ui/card";
+import { Users } from "lucide-react";
+import Page from "../page/page";
+import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 
 const Dashboard = () => {
-  const token = usetoken();
+
   const {
     data: dashboard,
     isLoading,
     isError,
     refetch,
-  } = useQuery({
+  } = useGetApiMutation({
+    url: DASHBOARD,
     queryKey: ["dashboard"],
-    queryFn: async () => {
-      const response = await apiClient.get(`${DASHBOARD}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data;
-    },
   });
-
   if (isLoading) {
     return <LoaderComponent name="Dashboard Data" />;
   }
@@ -60,9 +43,7 @@ const Dashboard = () => {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold">Dashboard</h2>
-          <p className="text-muted-foreground">
-            Overview of your events
-          </p>
+          <p className="text-muted-foreground">Overview of your events</p>
         </div>
 
         {/* Summary Cards */}

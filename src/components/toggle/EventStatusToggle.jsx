@@ -31,7 +31,6 @@ const EventStatusToggle = ({ initialStatus, teamId, onStatusChange }) => {
         });
       }
     } catch (error) {
-      console.log(error);
       toast({
         title: "Error",
         description: error?.response?.data?.message || "Failed to update",

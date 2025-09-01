@@ -107,7 +107,7 @@ const EventRegisterForm = ({ setOpen, open, selectedId = null, refetch }) => {
         )
         .map(([key]) => key);
 
-      console.log(missingFields, "missingFields");
+      // console.log(missingFields, "missingFields");
 
       const percentage =
         totalFormFields === 0
@@ -175,7 +175,6 @@ const EventRegisterForm = ({ setOpen, open, selectedId = null, refetch }) => {
         });
       }
     } catch (error) {
-      console.log(error);
       toast({
         title: "Error",
         description:

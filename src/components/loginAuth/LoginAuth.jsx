@@ -1,9 +1,4 @@
-/* eslint-disable no-unused-vars */
 import { PANEL_LOGIN } from "@/api";
-import apiClient from "@/api/axios";
-// import fabric from "@/assets/img/fabric.jpg";
-// import rawmaterial from "@/assets/img/raw-material.jpg";
-// import yarn from "@/assets/img/yarn.jpg";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,16 +11,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ButtonConfig } from "@/config/ButtonConfig";
 import { useToast } from "@/hooks/use-toast";
+import { useApiMutation } from "@/hooks/useApiMutation";
 import { loginSuccess } from "@/redux/slices/AuthSlice";
 import { AnimatePresence, motion } from "framer-motion";
+import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import LoginCarsol from "../common/LoginCarsol";
 import Logo from "../common/Logo";
-import { Eye, EyeOff } from "lucide-react";
 import ForgotPassword from "../ForgotPassword/ForgotPassword";
-
 
 export default function LoginAuth() {
   const [email, setEmail] = useState("");
@@ -37,6 +32,7 @@ export default function LoginAuth() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const { trigger: submitTrigger } = useApiMutation();
 
   const loadingMessages = [
     "Authenticating...",
@@ -66,26 +62,31 @@ export default function LoginAuth() {
     formData.append("password", password);
 
     try {
-      const res = await apiClient.post(PANEL_LOGIN, formData);
-      if (res.data.code === 200 && res.data.UserInfo?.token) {
-        const { UserInfo } = res.data;
+      const res = await submitTrigger({
+        url: PANEL_LOGIN,
+        method: "post",
+        data: formData,
+      });
+      if (res.code === 200 && res.UserInfo?.token) {
+        const { UserInfo } = res;
         dispatch(
           loginSuccess({
             token: UserInfo.token,
             id: UserInfo.user.id,
             name: UserInfo.user?.name,
+            mobile: UserInfo.user?.mobile,
             user_type: UserInfo.user?.user_type,
             email: UserInfo.user?.email,
             token_expire_time: UserInfo.token_expires_at,
-            version: res?.data?.version?.version_panel,
-            companyname: res?.data?.company_detils?.company_name,
-            companystatename: res?.data?.company_detils?.company_state_name,
-            company_address: res?.data?.company_detils?.company_address,
-            company_email: res?.data?.company_detils?.company_email,
-            company_gst: res?.data?.company_detils?.company_gst,
-            company_mobile: res?.data?.company_detils?.company_mobile,
-            company_state_code: res?.data?.company_detils?.company_state_code,
-            company_state_name: res?.data?.company_detils?.company_state_name,
+            version: res?.version?.version_panel,
+            companyname: res?.company_detils?.company_name,
+            companystatename: res?.company_detils?.company_state_name,
+            company_address: res?.company_detils?.company_address,
+            company_email: res?.company_detils?.company_email,
+            company_gst: res?.company_detils?.company_gst,
+            company_mobile: res?.company_detils?.company_mobile,
+            company_state_code: res?.company_detils?.company_state_code,
+            company_state_name: res?.company_detils?.company_state_name,
           })
         );
         navigate("/home");
@@ -149,7 +150,7 @@ export default function LoginAuth() {
                 <CardContent>
                   <form onSubmit={handleLogin} className="space-y-5">
                     <div>
-                      <Label htmlFor="email">Username</Label>
+                      <Label htmlFor="email">Mobile No</Label>
                       <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -159,7 +160,7 @@ export default function LoginAuth() {
                           id="email"
                           type="text"
                           value={email}
-                          placeholder="Enter your username"
+                          placeholder="Enter your Mobile No"
                           onChange={(event) => setEmail(event.target.value)}
                           required
                           autoComplete="username"
