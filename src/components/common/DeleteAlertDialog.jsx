@@ -18,14 +18,7 @@ const DeleteAlertDialog = ({
   handleDelete,
 }) => {
   return (
-    <AlertDialog
-      open={open}
-      // onOpenChange={(open) => {
-      //   if (!open) {
-      //     onOpenChange(false);
-      //   }
-      // }}
-    >
+    <AlertDialog open={open}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <div className="flex items-center gap-2 text-red-600">

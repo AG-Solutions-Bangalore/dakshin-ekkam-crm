@@ -1,6 +1,4 @@
 import { PANEL_CHANGE_PASSWORD } from "@/api";
-import apiClient from "@/api/axios";
-import usetoken from "@/api/usetoken";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,14 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ButtonConfig } from "@/config/ButtonConfig";
 import { useToast } from "@/hooks/use-toast";
+import { useApiMutation } from "@/hooks/useApiMutation";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 const ChangePassword = ({ open, setOpen }) => {
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState();
-  const username = useSelector((state) => state.auth.name);
-  const token = usetoken();
+  const { trigger: submitTrigger, loading: submitLoading } = useApiMutation();
+  const username = useSelector((state) => state.auth.mobile);
   const [formData, setFormData] = useState({
     username: username,
     old_password: "",
@@ -59,20 +57,17 @@ const ChangePassword = ({ open, setOpen }) => {
       return;
     }
 
-    setIsLoading(true);
     try {
-      const response = await apiClient.post(
-        `${PANEL_CHANGE_PASSWORD}`,
-        formData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await submitTrigger({
+        url: PANEL_CHANGE_PASSWORD,
+        method: "post",
+        data: formData,
+      });
 
-      if (response?.data.code == 201) {
+      if (response?.code == 201) {
         toast({
           title: "Success",
-          description: response.data.message,
+          description: response.message,
         });
 
         setFormData({
@@ -84,7 +79,7 @@ const ChangePassword = ({ open, setOpen }) => {
       } else {
         toast({
           title: "Error",
-          description: response.data.message,
+          description: response.message,
           variant: "destructive",
         });
       }
@@ -139,10 +134,10 @@ const ChangePassword = ({ open, setOpen }) => {
         <DialogFooter>
           <Button
             onClick={handleSubmit}
-            disabled={isLoading}
+            disabled={submitLoading}
             className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
           >
-            {isLoading ? (
+            {submitLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Processing...

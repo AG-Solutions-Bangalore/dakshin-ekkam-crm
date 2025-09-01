@@ -1,18 +1,10 @@
-import { EVENT } from "@/api";
+import { EVENT, EVENT_MEMEBER_TRACK, MEMBER_LIST } from "@/api";
 import Page from "@/app/page/page";
-import { AvatarCell } from "@/components/common/AvatarCell";
 import {
   ErrorComponent,
   LoaderComponent,
 } from "@/components/LoaderComponent/LoaderComponent";
-import EventStatusToggle from "@/components/toggle/EventStatusToggle";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -36,7 +28,6 @@ import {
 } from "@/components/ui/tooltip";
 import { ButtonConfig } from "@/config/ButtonConfig";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
-import { encryptId } from "@/utils/encyrption/Encyrption";
 import {
   flexRender,
   getCoreRowModel,
@@ -45,87 +36,94 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  ChevronDown,
-  Edit,
-  ScanLine,
-  Search,
-  SquarePlus,
-  User
-} from "lucide-react";
+import { ChevronDown, Edit, Search, Trash2 } from "lucide-react";
 import moment from "moment";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import EventMemberTrackForm from "../EventMemberTrack/EventMemberTrackForm";
-import EventTrackQRScanner from "../EventMemberTrack/EventTrackQRScanner";
-const EventList = () => {
-  const [open, setOpen] = useState(false);
-  const [selectedId, setSelected] = useState(null);
-  const [openQrDialog, setOpenQrDialog] = useState(false);
-  const [scanning, setScanning] = useState(false);
-  const [NoofMember, setNoofMember] = useState(null);
-  const [eventId, setEventId] = useState(null);
+import { decryptId } from "@/utils/encyrption/Encyrption";
+import DeleteAlertDialog from "@/components/common/DeleteAlertDialog";
+import { useSelector } from "react-redux";
+import { useToast } from "@/hooks/use-toast";
+import { useApiMutation } from "@/hooks/useApiMutation";
+const EventAttendMember = () => {
+  const { id } = useParams();
+  let decryptedId = null;
+  const { toast } = useToast();
 
-  const [imageUrls, setImageUrls] = useState({
-    userImageBase: "",
-    noImage: "",
-  });
+  if (id) {
+    try {
+      const rawId = decodeURIComponent(id);
+      decryptedId = decryptId(rawId);
+    } catch (err) {
+      console.error("Failed to decrypt ID:", err.message);
+    }
+  }
   const {
-    data: eventdata,
+    data: eventtrackdata,
     isLoading,
     isError,
     refetch,
   } = useGetApiMutation({
-    url: EVENT,
-    queryKey: ["eventdata"],
+    url: `${EVENT}s/${decryptedId}${MEMBER_LIST}`,
+    queryKey: ["eventtrackdata"],
   });
-  useEffect(() => {
-    if (!eventdata) return;
-    const userImageObj = eventdata?.image_url?.find(
-      (img) => img.image_for == "Event"
-    );
-    const noImageObj = eventdata?.image_url?.find(
-      (img) => img.image_for == "No Image"
-    );
+  const { trigger: submitTrigger } = useApiMutation();
 
-    setImageUrls({
-      userImageBase: userImageObj?.image_url || "",
-      noImage: noImageObj?.image_url || "",
-    });
-  }, [eventdata]);
+  const [open, setOpen] = useState(false);
+  const [selectedId, setSelected] = useState(null);
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
-  const navigate = useNavigate();
-  const handleScannerClose = () => {
-    setOpenQrDialog(false);
-    setScanning(false);
+  const userType = useSelector((state) => state.auth?.user_type);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState(null);
+  const handleDeleteRow = (eventid) => {
+    setDeleteItemId(eventid);
+    setDeleteConfirmOpen(true);
   };
-  const handleScanner = (user) => {
-    setEventId(user.id);
-    setNoofMember(user.event_no_member_allowed);
-    setOpenQrDialog(true);
-    setScanning(true);
+  const confirmDelete = async () => {
+    try {
+      const response = await submitTrigger({
+        url: `${EVENT_MEMEBER_TRACK}/${deleteItemId}`,
+        method: "delete",
+      });
+      if (response.code == 201) {
+        toast({
+          title: "Success",
+          description: response.message,
+          variant: "success",
+        });
+        setDeleteConfirmOpen(false);
+        setDeleteItemId(null);
+        refetch();
+      } else if (response.code == 400) {
+        toast({
+          title: "Duplicate Entry",
+          description: response.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Something went wrong.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Unexpected Error",
+        description:
+          error?.response?.data?.msg ||
+          error.message ||
+          "Something unexpected happened.",
+        variant: "destructive",
+      });
+      console.error("Failed to delete:", error);
+    }
   };
   const columns = [
-    {
-      accessorKey: "event_image",
-      id: "Event Image",
-      header: "Event Image",
-      cell: ({ row }) => {
-        const user = row.original;
-        const eventImageSrc = user.event_image
-          ? `${imageUrls.userImageBase}${user.event_image}`
-          : imageUrls.noImage;
-        return (
-          <div className="flex justify-center gap-2">
-            <AvatarCell imageSrc={eventImageSrc} alt="Avatar Image" />
-          </div>
-        );
-      },
-    },
-
     {
       accessorKey: "event_name",
       id: "Event Name",
@@ -133,52 +131,33 @@ const EventList = () => {
       cell: ({ row }) => <div>{row.getValue("Event Name")}</div>,
     },
     {
-      accessorKey: "event_from_date",
-      id: "From Date",
-      header: "From Date",
+      accessorKey: "event_member_mid",
+      id: "MID",
+      header: "MID",
+      cell: ({ row }) => <div>{row.getValue("MID")}</div>,
+    },
+    {
+      accessorKey: "name",
+      id: "Name",
+      header: "Name",
+      cell: ({ row }) => <div>{row.getValue("Name")}</div>,
+    },
+
+    {
+      accessorKey: "event_entry_date",
+      id: "Entry Date",
+      header: "Entry Date",
       cell: ({ row }) => {
-        const date = row.getValue("From Date");
+        const date = row.getValue("Entry Date");
         return <div>{moment(date).format("DD MMM YYYY")}</div>;
       },
     },
+
     {
-      accessorKey: "event_to_date",
-      id: "To Date",
-      header: "To Date",
-      cell: ({ row }) => {
-        const date = row.getValue("To Date");
-        return <div>{moment(date).format("DD MMM YYYY")}</div>;
-      },
-    },
-    {
-      accessorKey: "event_payment",
-      id: "Payment",
-      header: "Payment",
-      cell: ({ row }) => <div>{row.getValue("Payment")}</div>,
-    },
-    {
-      accessorKey: "event_amount",
-      id: "Amount",
-      header: "Amount",
-      cell: ({ row }) => <div>{row.getValue("Amount")}</div>,
-    },
-    {
-      accessorKey: "event_status",
-      id: "Status",
-      header: "Status",
-      cell: ({ row }) => {
-        const status = row.getValue("Status");
-        const teamId = row.original.id;
-        return (
-          <EventStatusToggle
-            initialStatus={status}
-            teamId={teamId}
-            onStatusChange={() => {
-              refetch();
-            }}
-          />
-        );
-      },
+      accessorKey: "event_no_of_people",
+      id: "No of People",
+      header: "No of People",
+      cell: ({ row }) => <div>{row.getValue("No of People")}</div>,
     },
 
     {
@@ -186,7 +165,6 @@ const EventList = () => {
       header: "Action",
       cell: ({ row }) => {
         const id = row.original.id;
-        const user = row.original;
 
         return (
           <div className="flex flex-row">
@@ -197,76 +175,39 @@ const EventList = () => {
                     variant="ghost"
                     size="icon"
                     onClick={() => {
-                      navigate(
-                        `/event-form/${encodeURIComponent(encryptId(id))}`
-                      );
+                      setSelected(id);
+                      setOpen(true);
                     }}
                   >
                     <Edit />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Edit Event</p>
+                  <p>Edit Event Track</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>{" "}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSelected(null);
-                      setOpen(true);
-                    }}
-                  >
-                    <SquarePlus />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Create Event Track</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>{" "}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleScanner(user)}
-                  >
-                    <ScanLine />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Scan Event</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>{" "}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      navigate(
-                        `/event-member-attend/${encodeURIComponent(
-                          encryptId(id)
-                        )}`
-                      );
-                    }}
-                  >
-                    <User />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Event Member Attend</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>{" "}
+            {(userType == "3" || userType == "4") && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-500"
+                      onClick={() => {
+                        handleDeleteRow(id);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete Attend Member</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
         );
       },
@@ -274,7 +215,7 @@ const EventList = () => {
   ];
 
   const table = useReactTable({
-    data: eventdata?.data || [],
+    data: eventtrackdata?.data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -303,7 +244,10 @@ const EventList = () => {
 
   if (isError) {
     return (
-      <ErrorComponent message="Error Fetching Event Data" refetch={refetch} />
+      <ErrorComponent
+        message="Error Fetching Event Track Data"
+        refetch={refetch}
+      />
     );
   }
 
@@ -311,13 +255,13 @@ const EventList = () => {
     <Page>
       <div className="w-full">
         <div className="flex text-left text-2xl text-gray-800 font-[400]">
-          Event List
+          Event Attend Member
         </div>
         <div className="flex items-center py-4">
           <div className="relative w-72">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
             <Input
-              placeholder="Search Event..."
+              placeholder="Search Event Attend Member..."
               value={table.getState().globalFilter || ""}
               onChange={(event) => table.setGlobalFilter(event.target.value)}
               className="pl-8 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200"
@@ -349,16 +293,6 @@ const EventList = () => {
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <Button
-            variant="default"
-            className={`ml-2 ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor} `}
-            onClick={() => {
-              navigate("/event-form");
-            }}
-          >
-            <SquarePlus className="h-4 w-4 " /> Event
-          </Button>
         </div>
         <div className="rounded-md border">
           <Table>
@@ -416,7 +350,7 @@ const EventList = () => {
         {/* row slection and pagintaion button  */}
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="flex-1 text-sm text-muted-foreground">
-            Total Event : &nbsp;
+            Total Event Track : &nbsp;
             {table.getFilteredRowModel().rows.length}
           </div>
           <div className="space-x-2">
@@ -447,23 +381,16 @@ const EventList = () => {
           refetch={refetch}
         />
       )}
-
-      <Dialog open={openQrDialog} onOpenChange={handleScannerClose}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Scan</DialogTitle>
-          </DialogHeader>
-          <EventTrackQRScanner
-            eventId={eventId}
-            setOpenQrDialog={setOpenQrDialog}
-            setScanning={setScanning}
-            scanning={scanning}
-            NoofMember={NoofMember}
-          />
-        </DialogContent>
-      </Dialog>
+      {deleteConfirmOpen && (
+        <DeleteAlertDialog
+          open={deleteConfirmOpen}
+          onOpenChange={setDeleteConfirmOpen}
+          description="Event Attend Member"
+          handleDelete={confirmDelete}
+        />
+      )}
     </Page>
   );
 };
 
-export default EventList;
+export default EventAttendMember;

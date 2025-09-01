@@ -8,7 +8,7 @@ import Page from "@/app/page/page";
 import { MemoizedSelect } from "@/components/common/MemoizedSelect";
 import { ReportPageHeader } from "@/components/common/ReportPageHeader";
 import { downloadPDF } from "@/components/downloadPDF";
-import { exportEventDetailsReportToExcel } from "@/components/excel/exportEventDetailsReportToExcel";
+import { exportEventRegisteredNotScanned } from "@/components/excel/exportEventRegisteredNotScanned";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ButtonConfig } from "@/config/ButtonConfig";
@@ -32,7 +32,6 @@ const RegisteredNotScanned = () => {
     url: EVENT,
     queryKey: ["eventlistdata"],
   });
-
   const eventOptions =
     eventData?.data
       ?.filter((item) => item.event_status === "Active")
@@ -153,7 +152,7 @@ const RegisteredNotScanned = () => {
                   variant="outline"
                   className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor} flex items-center`}
                   onClick={() =>
-                    exportEventDetailsReportToExcel(
+                    exportEventRegisteredNotScanned(
                       eventdetails,
                       eventdetailsData,
                       "Register_NotScanned_Report"
@@ -178,12 +177,10 @@ const RegisteredNotScanned = () => {
                   <thead className="bg-gray-100">
                     <tr>
                       <th className="px-3 py-2 text-center ">MID</th>
-                      <th className="px-3 py-2 text-center ">Payment Type</th>
-                      <th className="px-3 py-2 text-center ">Transaction</th>
-                      <th className="px-3 py-2 text-center ">No of People</th>
                       <th className="px-3 py-2 text-center ">Name</th>
                       <th className="px-3 py-2 text-center">Mobile</th>
-                      <th className="px-3 py-2 text-center  ">Member Type</th>
+                      <th className="px-3 py-2 text-center ">Payment Type</th>
+                      <th className="px-3 py-2 text-center ">Transaction</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -200,21 +197,18 @@ const RegisteredNotScanned = () => {
                           {item.event_register_mid}
                         </td>
                         <td className="px-3 py-2 text-center">
+                          {item.first_name}.{item.middle_name}.{item.last_name}
+                        </td>
+                        <td className="px-3 py-2 text-center ">
+                          {item.mobile}
+                        </td>
+                        <td className="px-3 py-2 text-center">
                           {item.event_register_payment_type}
                         </td>
                         <td className="px-3 py-2 text-center">
                           {item.event_register_transaction}
                         </td>
-                        <td className="px-3 py-2 text-center">
-                          {item.event_no_of_people}
-                        </td>{" "}
-                        <td className="px-3 py-2 text-center">{item.name}</td>
-                        <td className="px-3 py-2 text-center ">
-                          {item.mobile}
-                        </td>
-                        <td className="px-3 py-2 text-center ">
-                          {item.user_member_type}
-                        </td>
+               
                       </tr>
                     ))}
                   </tbody>

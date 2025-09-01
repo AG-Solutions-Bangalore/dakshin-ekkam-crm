@@ -163,7 +163,7 @@ const EventForm = () => {
         missingFields.push("Image");
       }
 
-      console.log(missingFields, "missingFields");
+      // console.log(missingFields, "missingFields");
 
       const percentage =
         totalFormFields === 0

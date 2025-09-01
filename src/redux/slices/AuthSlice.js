@@ -4,6 +4,7 @@ const initialState = {
   token: null,
   id: null,
   name: null,
+  mobile: null,
   user_type: null,
   email: null,
   token_expire_time: null,
@@ -26,6 +27,7 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.id = action.payload.id;
       state.name = action.payload.name;
+      state.mobile = action.payload.mobile;
       state.user_type = action.payload.user_type;
       state.email = action.payload.email;
       state.token_expire_time = action.payload.token_expire_time;

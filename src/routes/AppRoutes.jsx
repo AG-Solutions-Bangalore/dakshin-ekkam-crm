@@ -14,6 +14,8 @@ import ProtectedRoute from "./ProtectedRoute";
 import EventReport from "@/app/report/EventReport/EventReport";
 import EventDetailsReport from "@/app/report/EventDetailsReport/EventDetailsReport";
 import RegisteredNotScanned from "@/app/report/RegisteredNotScanned/RegisteredNotScanned";
+import EventAttendMember from "@/app/event/Event/EventAttendMember";
+import NotRegisterNotScanned from "@/app/report/NotregisteredNotScanned/NotRegisterNotScanned";
 const AppRoutes = () => {
   return (
     <Routes>
@@ -27,6 +29,10 @@ const AppRoutes = () => {
         <Route path="/member-form" element={<MemberForm />} />
         <Route path="/member-form/:id" element={<MemberForm />} />
         <Route path="/event" element={<EventList />} />
+        <Route
+          path="/event-member-attend/:id"
+          element={<EventAttendMember />}
+        />
         <Route path="/event-form" element={<EventForm />} />
         <Route path="/event-form/:id" element={<EventForm />} />
         <Route path="/event-register" element={<EventRegisterList />} />
@@ -36,6 +42,10 @@ const AppRoutes = () => {
         <Route
           path="/report-register-notscanned"
           element={<RegisteredNotScanned />}
+        />
+        <Route
+          path="/report-notregister-notscanned"
+          element={<NotRegisterNotScanned />}
         />
       </Route>
       <Route path="*" element={<NotFound />} />

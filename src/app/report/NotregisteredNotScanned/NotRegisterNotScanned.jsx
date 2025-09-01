@@ -5,14 +5,13 @@ import { useApiMutation } from "../../../hooks/useApiMutation";
 
 import {
   EVENT,
-  EVENT_NOTREGISTER_NOTSCANNED_REPORT,
-  EVENT_REGISTER_NOTSCANNED_REPORT,
+  EVENT_NOTREGISTER_NOTSCANNED_REPORT
 } from "@/api";
 import Page from "@/app/page/page";
 import { MemoizedSelect } from "@/components/common/MemoizedSelect";
 import { ReportPageHeader } from "@/components/common/ReportPageHeader";
 import { downloadPDF } from "@/components/downloadPDF";
-import { exportEventDetailsReportToExcel } from "@/components/excel/exportEventDetailsReportToExcel";
+import { exportEventNotRegisterNotScanned } from "@/components/excel/exportEventNotRegisterNotScanned";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ButtonConfig } from "@/config/ButtonConfig";
@@ -161,7 +160,7 @@ const NotRegisterNotScanned = () => {
                   variant="outline"
                   className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor} flex items-center`}
                   onClick={() =>
-                    exportEventDetailsReportToExcel(
+                    exportEventNotRegisterNotScanned(
                       eventdetails,
                       eventdetailsData,
                       "Not_Register_Not_Scanned"
@@ -186,12 +185,8 @@ const NotRegisterNotScanned = () => {
                   <thead className="bg-gray-100">
                     <tr>
                       <th className="px-3 py-2 text-center ">MID</th>
-                      <th className="px-3 py-2 text-center ">Payment Type</th>
-                      <th className="px-3 py-2 text-center ">Transaction</th>
-                      <th className="px-3 py-2 text-center ">No of People</th>
                       <th className="px-3 py-2 text-center ">Name</th>
                       <th className="px-3 py-2 text-center">Mobile</th>
-                      <th className="px-3 py-2 text-center  ">Member Type</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -205,23 +200,13 @@ const NotRegisterNotScanned = () => {
                       >
                         {" "}
                         <td className="px-3 py-2 text-center">
-                          {item.event_register_mid}
+                          {item.user_mid}
                         </td>
                         <td className="px-3 py-2 text-center">
-                          {item.event_register_payment_type}
+                          {item.first_name}.{item.middle_name}.{item.last_name}
                         </td>
-                        <td className="px-3 py-2 text-center">
-                          {item.event_register_transaction}
-                        </td>
-                        <td className="px-3 py-2 text-center">
-                          {item.event_no_of_people}
-                        </td>{" "}
-                        <td className="px-3 py-2 text-center">{item.name}</td>
                         <td className="px-3 py-2 text-center ">
                           {item.mobile}
-                        </td>
-                        <td className="px-3 py-2 text-center ">
-                          {item.user_member_type}
                         </td>
                       </tr>
                     ))}

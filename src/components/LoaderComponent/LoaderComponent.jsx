@@ -1,7 +1,6 @@
 import Page from "@/app/page/page";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export const LoaderComponent = ({ name = "Loading..." }) => {

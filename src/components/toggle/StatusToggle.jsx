@@ -1,5 +1,7 @@
+import { EVENT_UPDATE_STATUS } from "@/api";
 import usetoken from "@/api/usetoken";
 import { useToast } from "@/hooks/use-toast";
+import { useApiMutation } from "@/hooks/useApiMutation";
 import axios from "axios";
 import { RefreshCcw } from "lucide-react";
 import { useState } from "react";
@@ -9,29 +11,38 @@ const StatusToggle = ({ initialStatus, teamId, onStatusChange }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const token = usetoken();
+  const { trigger: submitTrigger, loading: submitLoading } = useApiMutation();
+
   const handleToggle = async () => {
     setIsLoading(true);
     const newStatus = status === "Active" ? "Inactive" : "Active";
 
     try {
-      await axios.put(
-        `/api/panel-update-team-status/${teamId}`,
-        { status: newStatus },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      setStatus(newStatus);
-      if (onStatusChange) {
-        onStatusChange(newStatus);
-      }
-
-      toast({
-        title: "Status Updated",
-        description: `Team status changed to ${newStatus}`,
-        variant: "success",
+      const payload = { status: newStatus };
+      const response = await submitTrigger({
+        url: EVENT_UPDATE_STATUS,
+        method: "put",
+        data: payload,
       });
+      if (response.code == "200") {
+        setStatus(newStatus);
+        if (onStatusChange) {
+          onStatusChange(newStatus);
+        }
+
+        toast({
+          title: "Status Updated",
+          description: response.message || " Updated Sucessfully",
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description:
+            response.message || "Failed to update status. Please try again.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",

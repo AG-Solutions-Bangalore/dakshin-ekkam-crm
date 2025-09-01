@@ -2,10 +2,10 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import moment from "moment";
 
-export const exportEventDetailsReportToExcel = async (
+export const exportEventNotRegisterNotScanned = async (
   eventSummary,
   participantData,
-  title = "Event_Details_Report"
+  title = "Event_Report"
 ) => {
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet("Event Report");
@@ -72,9 +72,6 @@ export const exportEventDetailsReportToExcel = async (
     "MID",
     "Full Name",
     "Mobile",
-    "Payment Type",
-    "Transaction",
-    "No. of People",
   ];
 
   const headerRow = sheet.addRow(tableHeader);
@@ -92,9 +89,6 @@ export const exportEventDetailsReportToExcel = async (
     { key: "mid", width: 30 },
     { key: "name", width: 25 },
     { key: "mobile", width: 18 },
-    { key: "payment", width: 30 },
-    { key: "txn", width: 22 },
-    { key: "people", width: 15 },
   ];
 
   // ----- PARTICIPANT DATA -----
@@ -103,12 +97,9 @@ export const exportEventDetailsReportToExcel = async (
       .filter(Boolean)
       .join(" ");
     sheet.addRow({
-      mid: item.event_register_mid,
+      mid: item.user_mid,
       name: fullName,
       mobile: item.mobile,
-      payment: item.event_register_payment_type,
-      txn: item.event_register_transaction,
-      people: item.event_no_of_people,
     });
   });
 
