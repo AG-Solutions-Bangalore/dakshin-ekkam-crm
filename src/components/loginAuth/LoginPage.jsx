@@ -17,7 +17,7 @@ export default function LoginPage() {
   const { toast } = useToast();
   const { trigger: submitTrigger, loading: isLoading } = useApiMutation();
   const location = useLocation();
-
+  const backurl = import.meta.env.VITE_BACK_URL;
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const emailParam = params.get("email");
@@ -67,7 +67,6 @@ export default function LoginPage() {
           })
         );
 
-        // ✅ Show success animation first, then navigate
         setIsSuccess(true);
         setTimeout(() => {
           navigate("/home");
@@ -79,6 +78,7 @@ export default function LoginPage() {
           description:
             res?.data?.message || "Login failed: Unexpected response.",
         });
+        window.location.href = backurl;
       }
     } catch (error) {
       toast({
@@ -86,6 +86,7 @@ export default function LoginPage() {
         title: "Login Failed",
         description: error.response?.data?.message || "Please try again.",
       });
+      window.location.href = backurl;
     }
   };
 

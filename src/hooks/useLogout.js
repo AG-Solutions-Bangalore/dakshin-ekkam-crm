@@ -9,6 +9,7 @@ const useLogout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const loginType = useSelector((state) => state.auth.login_type);
+  const backurl = import.meta.env.VITE_BACK_URL;
   const handleLogout = async () => {
     try {
       await persistor.flush();
@@ -16,7 +17,7 @@ const useLogout = () => {
       dispatch(logout());
 
       if (loginType == "website") {
-        window.location.href = "https://dhakshin.netlify.app/member";
+        window.location.href = backurl;
       } else {
         navigate("/");
       }
