@@ -17,6 +17,7 @@ const initialState = {
   company_mobile: null,
   company_state_code: null,
   company_state_name: null,
+  login_type: null,
 };
 
 const authSlice = createSlice({
@@ -40,6 +41,7 @@ const authSlice = createSlice({
       state.company_mobile = action.payload.company_mobile;
       state.company_state_code = action.payload.company_state_code;
       state.company_state_name = action.payload.company_state_name;
+      state.login_type = action.payload.login_type;
     },
     logout: () => {
       return initialState;

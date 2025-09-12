@@ -16,11 +16,13 @@ import EventDetailsReport from "@/app/report/EventDetailsReport/EventDetailsRepo
 import RegisteredNotScanned from "@/app/report/RegisteredNotScanned/RegisteredNotScanned";
 import EventAttendMember from "@/app/event/Event/EventAttendMember";
 import NotRegisterNotScanned from "@/app/report/NotregisteredNotScanned/NotRegisterNotScanned";
+import LoginPage from "@/components/loginAuth/LoginPage";
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<AuthRoute />}>
         <Route path="/" element={<Login />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/maintenance" element={<Maintenance />} />
       </Route>
       <Route path="/" element={<ProtectedRoute />}>
