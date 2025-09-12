@@ -23,8 +23,13 @@
     --input: 270 15% 88%;
     --ring: 265 70% 45%;
     --radius: 0.75rem;
-
-    --sidebar-background: 270 30% 12%;
+    --sidebar-gradient: linear-gradient(
+      to right,
+      hsl(270 30% 20%),
+      hsl(270 30% 15%),
+      hsl(270 30% 10%)
+    );
+    --sidebar-background: 270 30% 18%;
     --sidebar-foreground: 0 0% 95%;
     --sidebar-primary: 265 70% 45%;
     --sidebar-primary-foreground: 0 0% 98%;
