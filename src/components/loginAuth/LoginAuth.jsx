@@ -87,6 +87,7 @@ export default function LoginAuth() {
             company_mobile: res?.company_detils?.company_mobile,
             company_state_code: res?.company_detils?.company_state_code,
             company_state_name: res?.company_detils?.company_state_name,
+            login_type: "panel",
           })
         );
         navigate("/home");
